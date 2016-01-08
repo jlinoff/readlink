@@ -19,4 +19,15 @@ $ ./readlink.py -m wombat
 /Users/jlinoff/work/readlink/wombat
 ```
 
+Here is how you install it.
+
+```bash
+$ [ ~/work ] && mkdir -p ~/work
+$ cd work
+$ git clone https://github.com/jlinoff/readlink.git
+$ cp readlink/readlink.py ~/bin
+$ chmod a+rwx ~/bin/readlink.py
+$ # Add ~/bin to your PATH.
+```
+
 Please report any bugs to me here.
