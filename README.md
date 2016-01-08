@@ -1,5 +1,5 @@
 # readlink
-Python port of readlink with the -f option for use on Mac OS X.
+Python port of readlink with the -e, -f and -m options for use on Mac OS X.
 
 This is a complete rewrite of the linux version of readlink-8.4 in Python because I really missed the `-f` and `-m` options. It has a `.py` extension to distinguish it from the BSD version of readlink that is shipped by default.
 
