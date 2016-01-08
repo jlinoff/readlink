@@ -129,15 +129,15 @@ def main():
                 err('{}: No such directory'.format(path))
         elif mode == 'e':
             # All components must exist.
-            real = os.path.realpath(real)
-            full = os.path.abspath(path)
+            real = os.path.realpath(path)
+            full = os.path.abspath(real)
             if os.path.exists(full):
                 wr(full)
             elif verbose > 1:
                 err('{}: No such file or directory'.format(path))
         elif mode == 'm':
             # It doesn't matter if any exist.
-            real = os.path.realpath(real)
+            real = os.path.realpath(path)
             wr(os.path.abspath(real))
 
 
