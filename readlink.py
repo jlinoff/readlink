@@ -2,6 +2,8 @@
 '''
 A complete rewrite of linux readlink 8.4 in Python for Mac OSX because
 I really miss "readlink -f".
+
+It is compatible with both python-2.7.x and python-3.x.
 '''
 import os
 import sys
@@ -19,9 +21,9 @@ def usage():
     '''
     Help.
     '''
+    # pylint: disable=superfluous-parens
     print('''Usage: readlink [OPTION]... FILE
 Print value of a symbolic link or canonical file name
-
   -f, --canonicalize            canonicalize by following every symlink in
                                 every component of the given name recursively;
                                 all but the last component must exist
@@ -37,7 +39,6 @@ Print value of a symbolic link or canonical file name
   -v, --verbose                 report error messages
   -h, --help                    display this help and exit
   -V, --version                 output version information and exit
-
 WARNING! This tool is a complete rewrite of the linux version 8.4 to
          provide the same capability on Mac OSX.
          It may not behave identically in all cases.
@@ -55,6 +56,7 @@ License: MIT
 Source: https://github.com/jlinoff/readlink
 The original version of this program was written by Dmitry V. Levin.'''
           .format(os.path.basename(sys.argv[0])))
+    # pylint: enable=superfluous-parens
     sys.exit(0)
 
 
@@ -95,50 +97,58 @@ def getopts():
     return files, newline, verbose, mode
 
 
+def process_file(path, newline, verbose, mode):
+    '''
+    Print out the file information.
+    '''
+    def wrt(msg):
+        '''
+        Write a message with or without a newline.
+        '''
+        sys.stdout.write(msg)
+        if newline is True:
+            sys.stdout.write('\n')
+
+    if mode == '':
+        # Only generate output if the file is a link.
+        if os.path.islink(path):
+            real = os.path.realpath(path)
+            if os.path.isabs(path):
+                wrt(os.path.abspath(real))
+            else:
+                wrt(os.path.relpath(real))
+        elif verbose > 1:
+            err('{}: Invalid argument'.format(path))
+    elif mode == 'f':
+        # All but the last must exist.
+        real = os.path.realpath(path)
+        full = os.path.abspath(real)
+        dirname = os.path.dirname(full)
+        if os.path.exists(dirname):
+            wrt(full)
+        elif verbose > 1:
+            err('{}: No such directory'.format(path))
+    elif mode == 'e':
+        # All components must exist.
+        real = os.path.realpath(path)
+        full = os.path.abspath(real)
+        if os.path.exists(full):
+            wrt(full)
+        elif verbose > 1:
+            err('{}: No such file or directory'.format(path))
+    elif mode == 'm':
+        # It doesn't matter if any exist.
+        real = os.path.realpath(path)
+        wrt(os.path.abspath(real))
+
+
 def main():
     '''
     Main
     '''
     files, newline, verbose, mode = getopts()
-
-    def wr(msg):
-        ''' Write a message with or without a newline. '''
-        sys.stdout.write(msg)
-        if newline is True:
-            sys.stdout.write('\n')
-
     for path in files:
-        if mode == '':
-            # Only generate output if the file is a link.
-            if os.path.islink(path):
-                real = os.path.realpath(path)
-                if os.path.isabs(path):
-                    wr(os.path.abspath(real))
-                else:
-                    wr(os.path.relpath(real))
-            elif verbose > 1:
-                err('{}: Invalid argument'.format(path))
-        elif mode == 'f':
-            # All but the last must exist.
-            real = os.path.realpath(path)
-            full = os.path.abspath(real)
-            dirname = os.path.dirname(full)
-            if os.path.exists(dirname):
-                wr(full)
-            elif verbose > 1:
-                err('{}: No such directory'.format(path))
-        elif mode == 'e':
-            # All components must exist.
-            real = os.path.realpath(path)
-            full = os.path.abspath(real)
-            if os.path.exists(full):
-                wr(full)
-            elif verbose > 1:
-                err('{}: No such file or directory'.format(path))
-        elif mode == 'm':
-            # It doesn't matter if any exist.
-            real = os.path.realpath(path)
-            wr(os.path.abspath(real))
+        process_file(path, newline, verbose, mode)
 
 
 if __name__ == '__main__':
